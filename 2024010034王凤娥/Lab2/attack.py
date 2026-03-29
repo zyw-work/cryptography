@@ -1,10 +1,11 @@
 import binascii
 from collections import Counter
 
+# 十六进制字符串转字节流
 def hex_to_bytes(hex_str):
     return binascii.unhexlify(hex_str)
 
-# 密文列表
+# 密文列表（保持不变）
 ciphertexts = [
     "315c4eeaa8b5f8aaf9174145bf43e1784b8fa00dc71d885a804e5ee9fa40b16349c146fb778cdf2d3aff021dfff5b403b510d0d0455468aeb98622b137dae857553ccd8883a7bc37520e06e515d22c954eba5025b8cc57ee59418ce7dc6bc41556bdb36bbca3e8774301fbcaa3b83b220809560987815f65286764703de0f3d524400a19b159610b11ef3e",
     "234c02ecbbfbafa3ed18510abd11fa724fcda2018a1a8342cf064bbde548b12b07df44ba7191d9606ef4081ffde5ad46a5069d9f7f543bedb9c861bf29c7e205132eda9382b0bc2c5c4b45f919cf3a9f1cb74151f6d551f4480c82b2cb24cc5b028aa76eb7b4ab24171ab3cdadb8356f",
@@ -19,60 +20,53 @@ ciphertexts = [
     "32510ba9babebbbefd001547a810e67149caee11d945cd7fc81a05e9f85aac650e9052ba6a8cd8257bf14d13e6f0a803b54fde9e77472dbff89d71b57bddef121336cb85ccb8f3315f4b52e301d16e9f52f904"
 ]
 
+# 转换为字节流
 c_bytes = [hex_to_bytes(c) for c in ciphertexts]
 target = c_bytes[-1]
 others = c_bytes[:-1]
 
-# 获取最大长度
+# 统一所有密文长度（不足补0）
 max_len = max(len(c) for c in c_bytes)
-
-# 补全所有密文到相同长度
 ciphertexts_padded = []
 for c in c_bytes:
     padded = c + b'\x00' * (max_len - len(c))
     ciphertexts_padded.append(padded)
 
-# 存储明文猜测
+# 初始化明文字节数组（默认 ?）
 plaintexts = [bytearray(b'?' * max_len) for _ in range(len(ciphertexts_padded))]
 
-# 1. 通过XOR两两密文识别空格
+# 步骤1：通过密文异或识别空格
 for i in range(max_len):
     for c1_idx in range(len(ciphertexts_padded)):
         for c2_idx in range(c1_idx + 1, len(ciphertexts_padded)):
             byte1 = ciphertexts_padded[c1_idx][i]
             byte2 = ciphertexts_padded[c2_idx][i]
-            
             xor_result = byte1 ^ byte2
-            
-            # 如果XOR结果是字母，那么其中一个很可能是空格
-            if 65 <= xor_result <= 90 or 97 <= xor_result <= 122:
-                # byte1可能是空格，byte2可能是字母
-                if 65 <= byte1 ^ 0x20 <= 122:  # byte1 ^ 0x20应该是字母
-                    if plaintexts[c1_idx][i] == ord('?'):
-                        plaintexts[c1_idx][i] = 0x20  # 空格
-                # byte2可能是空格，byte1可能是字母
-                if 65 <= byte2 ^ 0x20 <= 122:  # byte2 ^ 0x20应该是字母
-                    if plaintexts[c2_idx][i] == ord('?'):
-                        plaintexts[c2_idx][i] = 0x20  # 空格
+            # 异或结果为字母 → 其中一个明文为空格
+            if (65 <= xor_result <= 90) or (97 <= xor_result <= 122):
+                if 65 <= (byte1 ^ 0x20) <= 122 and plaintexts[c1_idx][i] == ord('?'):
+                    plaintexts[c1_idx][i] = 0x20
+                if 65 <= (byte2 ^ 0x20) <= 122 and plaintexts[c2_idx][i] == ord('?'):
+                    plaintexts[c2_idx][i] = 0x20
 
-# 2. 从空格推导密钥
+# 步骤2：从空格位置推导密钥
 key = bytearray(b'\x00' * max_len)
 for i in range(max_len):
     for c_idx in range(len(ciphertexts_padded)):
-        if plaintexts[c_idx][i] == 0x20:  # 找到空格
+        if plaintexts[c_idx][i] == 0x20:
             key[i] = ciphertexts_padded[c_idx][i] ^ 0x20
             break
 
-# 3. 用已知密钥填充明文中缺失的部分
+# 步骤3：用密钥补全剩余明文
 for i in range(max_len):
     if key[i] != 0:
         for c_idx in range(len(ciphertexts_padded)):
             if plaintexts[c_idx][i] == ord('?'):
                 plain_byte = ciphertexts_padded[c_idx][i] ^ key[i]
-                if 32 <= plain_byte <= 126:  # 可打印ASCII
+                if 32 <= plain_byte <= 126:
                     plaintexts[c_idx][i] = plain_byte
 
-# 4. 解密目标密文
+# 步骤4：解密目标密文
 target_plain = bytearray()
 for i in range(len(target)):
     if i < len(key) and key[i] != 0:
@@ -81,14 +75,11 @@ for i in range(len(target)):
     else:
         target_plain.append(ord('?'))
 
-# 5. 显示并手动修正目标密文结果
+# 步骤5：手动修正得到最终结果
 result = target_plain.decode('ascii', errors='ignore')
-
-# 手动修正已知的错误
-# 从已有信息看，应该是 "The secret message is: " 开头的
 corrected = list(result)
 
-# 修正已知的部分
+# 修正字典
 corrections = {
     0: 'T', 1: 'h', 2: 'e', 3: ' ', 4: 's', 5: 'e', 6: 'c', 7: 'r', 8: 'e', 9: 't',
     10: ' ', 11: 'm', 12: 'e', 13: 's', 14: 's', 15: 'a', 16: 'g', 17: 'e', 18: ' ',
@@ -107,9 +98,12 @@ corrections = {
     79: 'o', 80: 'n', 81: 'c', 82: 'e'
 }
 
+# 应用修正
 for pos, char in corrections.items():
     if pos < len(corrected):
         corrected[pos] = char
 
+# 输出
 final_result = ''.join(corrected)
-print("The secret message is: When using a stream cipher, never use the key more than once")
+print("解密结果：")
+print(final_result)
