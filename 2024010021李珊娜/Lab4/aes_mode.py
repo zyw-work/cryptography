@@ -52,7 +52,7 @@ def aes_ctr_decrypt(key: bytes, ciphertext: bytes) -> bytes:
     # 2. 初始化AES-ECB加密器（CTR仅使用ECB加密）
     aes = AES.new(key, AES.MODE_ECB)
     plaintext = b""
-    counter = 0  # 计数器初始值
+    counter = 0 
     
     # 3. 按16字节分组生成密钥流并解密
     for i in range(0, len(cipher_data), 16):
