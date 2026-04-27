@@ -14,9 +14,9 @@
 
 请将这些事件按**从最可能到最不可能**的顺序排列：
 
-- [x] 2, 3, 4, 1, 5
+- [ ] 2, 3, 4, 1, 5
 - [ ] 2, 3, 1, 5, 4
-- [ ] 2, 3, 1, 4, 5
+- [x] 2, 3, 1, 4, 5
 
 ---
 
@@ -42,7 +42,7 @@
 - [x] $F'(k, x) = \text{reverse}(F(k, x))$，其中 $\text{reverse}(y)$ 将字符串 $y$ 翻转，使得 $y$ 的第一位变为 $\text{reverse}(y)$ 的最后一位，以此类推
 - [ ] $F'(k, x) = \begin{cases} F(k, x) & \text{当 } x \neq 0^n \\ 0^n & \text{当 } x = 0^n \end{cases}$
 - [ ] $F'(k, x) = \begin{cases} F(k, x) & \text{当 } x \neq 0^n \\ k & \text{当 } x = 0^n \end{cases}$
-- [x] $F'(k, x) = F(k, x)[0, \ldots, n-2]$（即 $F'$ 丢弃 $F(k, x)$ 的最后一位）
+- [ ] $F'(k, x) = F(k, x)[0, \ldots, n-2]$（即 $F'$ 丢弃 $F(k, x)$ 的最后一位）
 
 ---
 
@@ -87,8 +87,8 @@ $$
 
 - [ ] $c_1 = c_0$
 - [ ] $c_0 = c_1$
-- [x] $c_1 = c_0'$
-- [ ] $c_0 = c_0'$
+- [ ] $c_1 = c_0'$
+- [x] $c_0 = c_0'$
 
 ---
 
@@ -123,9 +123,9 @@ $$
 假设攻击者截获一个数据包，已知该数据包的有效载荷使用 **AES CBC 模式**配合**随机 IV** 加密。加密后的数据包有效载荷长度为 **128 字节**。以下哪条消息最可能是该有效载荷的解密结果？
 
 - [ ] `'To consider the resistance of an enciphering process to being broken we should assume that at same times the enemy knows everything but the key being used and to break it needs only discover the key from this information.'`
-- [x] `'In this letter I make some remarks on a general principle relevant to enciphering in general and my machine.'`
+- [ ] `'In this letter I make some remarks on a general principle relevant to enciphering in general and my machine.'`
 - [ ] `'We see immediately that one needs little information to begin to break down the process.'`
-- [ ] `'The most direct computation would be for the enemy to try all 2^r possible keys, one by one.'`
+- [x] `'The most direct computation would be for the enemy to try all 2^r possible keys, one by one.'`
 
 ---
 
@@ -154,7 +154,7 @@ $$
 
 > **注意**：由于你能够预测该函数在新输入点的值，因此该 PRF 是不安全的。
 
-**答案：** _<u>_1111<u>__
+**答案：** _____1111______
 
 ---
 
